@@ -38,6 +38,17 @@ Download the sample datasets (eg. wikipedia and reddit) from
 [here](http://snap.stanford.edu/jodie/) and store their csv files in a folder named
 ```data/```.
 
+#### js) data info
+Wiki: 
+    Node: users and pages
+    Edge: user editing page
+    Node feature: initialize to 0
+    Edge feature: input (text features)
+    
+    time stamp: --
+    state_label: whether a user is banned
+    
+    
 #### Preprocess the data
 We use the dense `npy` format to save the features in binary format. If edge features or nodes 
 features are absent, they will be replaced by a vector of zeros. 
@@ -45,6 +56,14 @@ features are absent, they will be replaced by a vector of zeros.
 python utils/preprocess_data.py --data wikipedia --bipartite
 python utils/preprocess_data.py --data reddit --bipartite
 ```
+
+#### js) preprocess output
+Wiki:
+    reindex nodes ids -- first users then items
+    ml_wiki.csv reindexed and remove feature
+    ml_wiki.npy edge features
+    ml_wiwki_node.npy node features -- all 0s, 172 columns  
+    
 
 
 

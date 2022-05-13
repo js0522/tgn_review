@@ -56,11 +56,19 @@ def get_data_node_classification(dataset_name, use_validation=False):
 # xzl) load from files (saved by preprosee_data.py) 
 #   parse and return multi @Data sets ... this is the entry func. 
 #   each Data stored in multiple columns (src,dest,timestamps..), time ordered.
+
+# js) get_data
+    # DATA -- name 
+    #'Whether to use disjoint set of new nodes for train and val'
+    #'Whether to randomize node features'
+    # train_split
+    # fixed_edge_feature
+
 def get_data(dataset_name, different_new_nodes_between_val_and_test=False, randomize_features=False, train_split=0.70, fixed_edge_feat=False):
   ### Load data and train val test split
   graph_df = pd.read_csv('./data/ml_{}.csv'.format(dataset_name)) #xzl: dataframe from csv
-  edge_features = np.load('./data/ml_{}.npy'.format(dataset_name))
-  node_features = np.load('./data/ml_{}_node.npy'.format(dataset_name)) 
+  edge_features = np.load('./data/ml_{}.npy'.format(dataset_name)) 
+  node_features = np.load('./data/ml_{}_node.npy'.format(dataset_name)) #zeros, 172 columns 
     
   print("xzl: edge features shape {}".format(edge_features.shape))
   
@@ -82,6 +90,7 @@ def get_data(dataset_name, different_new_nodes_between_val_and_test=False, rando
   labels = graph_df.label.values
   timestamps = graph_df.ts.values
 
+#skiped
   if fixed_edge_feat:
     # xzl ... load fixed edges
     edge_idxs_fixed = np.load('./data/ml_{}_approx.npy'.format(dataset_name))

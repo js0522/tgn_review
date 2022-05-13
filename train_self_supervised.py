@@ -25,6 +25,9 @@ def trace_handler(p):
 torch.manual_seed(0)
 np.random.seed(0)
 
+### js) note, default -- int, str, etc.
+            # action -- bool
+
 ### Argument and global variables
 parser = argparse.ArgumentParser('TGN self-supervised training')
 parser.add_argument('-d', '--data', type=str, help='Dataset name (eg. wikipedia or reddit)',
