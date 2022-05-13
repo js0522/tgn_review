@@ -178,7 +178,32 @@ for i in range(args.n_runs):
   results_path = "results/{}_{}.pkl".format(args.prefix, i) if i > 0 else "results/{}.pkl".format(args.prefix)
   Path("results/").mkdir(parents=True, exist_ok=True)
 
-  # Initialize Model
+# Initialize Model
+      # neighbor_finder -- utils/utils/get_neighbor_finder
+          # data -- utils.data_processing import get_data
+      # node_feature
+      # edge_feature
+      # device
+      # n_layers
+      # n_heads
+      # dropout
+      # use_memory
+      # message_dimension
+      # memory_dimension
+      # memory_update_at_start
+      # embedding_module_type 
+      # message_function
+      # aggregator_type
+      # memory_updater_type
+      # n_neighbors
+      # mean_time_shift_src std_time
+      # mean_time_shift_dst std_time
+      # use_destination_embedding_in_message
+      # use_source_embedding_in_messgae
+      # dyrep
+      # mem_node_prob
+      # use_fixed_times    
+  
   tgn = TGN(neighbor_finder=train_ngh_finder, node_features=node_features,
             edge_features=edge_features, device=device,
             n_layers=NUM_LAYER,
