@@ -256,6 +256,9 @@ for i in range(args.n_runs):
     train_losses = []
 
     early_stopper = EarlyStopMonitor(max_round=args.patience)
+    
+    # start Epoch
+    
     for epoch in range(NUM_EPOCH):
       start_epoch = time.time()
       ### Training
@@ -269,6 +272,10 @@ for i in range(args.n_runs):
       m_loss = []
 
       logger.info('start {} epoch'.format(epoch))
+      
+    
+      # start training
+    
       with profile(
         #activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
         activities=[],
@@ -279,17 +286,23 @@ for i in range(args.n_runs):
         on_trace_ready=trace_handler,
         with_stack=True,
       ) as p:
-        for k in range(0, num_batch, args.backprop_every):
+            
+        # start each batch    
+            
+        for k in range(0, num_batch, args.backprop_every): # js) 0-406
           loss = 0
-          optimizer.zero_grad()
+          optimizer.zero_grad() # ?? to check
 
           # Custom loop to allow to perform backpropagation only every a certain number of batches
           for j in range(args.backprop_every):
             batch_idx = k + j
-
+            #logger.info('k {}'.format(k))
+            #logger.info('j {}'.format(j))
             if batch_idx >= num_batch:
               continue
-
+            
+            #               k     *     200
+            # js) get the batches
             start_idx = batch_idx * BATCH_SIZE
             end_idx = min(num_instance, start_idx + BATCH_SIZE)
             sources_batch, destinations_batch = train_data.sources[start_idx:end_idx], \
@@ -297,9 +310,11 @@ for i in range(args.n_runs):
             edge_idxs_batch = train_data.edge_idxs[start_idx: end_idx]
             timestamps_batch = train_data.timestamps[start_idx:end_idx]
 
+            
+            
             size = len(sources_batch)
             # xzl: how to ensure these edges are neg?  (sampled sources seem discarded)
-            _, negatives_batch = train_rand_sampler.sample(size) 
+            _, negatives_batch = train_rand_sampler.sample(size)  # js) ?? check
 
             with torch.no_grad():
               pos_label = torch.ones(size, dtype=torch.float, device=device)
@@ -330,7 +345,10 @@ for i in range(args.n_runs):
 
           if k % 100 == 0:
             print("# batch =", k)
-            #p.step() 
+            #p.step()
+            
+          # end Epoch
+      #end trainning
 
       epoch_time = time.time() - start_epoch
       epoch_times.append(epoch_time)
