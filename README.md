@@ -64,7 +64,11 @@ Wiki:
     ml_wiki.npy edge features
     ml_wiwki_node.npy node features -- all 0s, 172 columns  
     
-
+#### js) Neighbor finder
+    re-organize the neighbor info
+        self.node_to_neighbors = number of times to the neighbor
+        self.node_to_edge_idxs = edge index for each time to neighbor
+        self.node_to_edge_timestamps = timestamps for each time to the neighbor
 
 
 ### Model Training
