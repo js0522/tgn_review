@@ -183,29 +183,42 @@ for i in range(args.n_runs):
 # Initialize Model
       # neighbor_finder -- utils/utils/get_neighbor_finder
           # data -- utils.data_processing import get_data
-      # node_feature
-      # edge_feature
-      # device
-      # n_layers
-      # n_heads
-      # dropout
-      # use_memory
-      # message_dimension
-      # memory_dimension
-      # memory_update_at_start
-      # embedding_module_type 
-      # message_function
-      # aggregator_type
-      # memory_updater_type
-      # n_neighbors
-      # mean_time_shift_src std_time
+          # *another way to represent the graph
+      # node_feature -- pass
+      # edge_feature -- pass
+      # device --skipped
+      # n_layers -- layer
+      # n_heads -- attention layer heads
+      # dropout -- dropout use in regularization method
+      # use_memory --  augument model with node memory
+      # message_dimension -- dimension of message
+      # memory_dimension -- dimension of the memory for each user
+      # memory_update_at_start -- when to update memory
+      # embedding_module_type -- type of embedding modules -- GAT, graph sum, identity, time
+      # message_function -- type of message function -- mlp, identity
+      # aggregator_type -- type of message aggregator
+      # memory_updater_type -- type of memory updater -- gru, rnn
+      # n_neighbors -- number of neighbor to sample
+      # mean_time_shift_src std_time -- 
       # mean_time_shift_dst std_time
+            # in compute_time_statistics function
+    
       # use_destination_embedding_in_message
+            # whether use embedding of the destination node
+            
       # use_source_embedding_in_messgae
+            # whether use embedding fo the source node
+      
       # dyrep
-      # mem_node_prob
-      # use_fixed_times    
-  
+            #whether to run the DYREP model
+      
+      # added two
+          # mem_node_prob
+                #how many node have memory
+
+          # use_fixed_times    
+                #???
+            
   tgn = TGN(neighbor_finder=train_ngh_finder, node_features=node_features,
             edge_features=edge_features, device=device,
             n_layers=NUM_LAYER,
