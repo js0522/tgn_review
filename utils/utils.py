@@ -91,7 +91,9 @@ class RandEdgeSampler(object):
 #   @max_node_idx: ignore node with ids higher than this id
 def get_neighbor_finder(data, uniform, max_node_idx=None):
   max_node_idx = max(data.sources.max(), data.destinations.max()) if max_node_idx is None else max_node_idx
+        # js) max id
   adj_list = [[] for _ in range(max_node_idx + 1)]
+        # js) create adj_list list
   for source, destination, edge_idx, timestamp in zip(data.sources, data.destinations,
                                                       data.edge_idxs,
                                                       data.timestamps):
@@ -111,7 +113,9 @@ class NeighborFinder:
     for neighbors in adj_list:
       # Neighbors is a list of tuples (neighbor, edge_idx, timestamp)
       # We sort the list based on timestamp
-      sorted_neighhbors = sorted(neighbors, key=lambda x: x[2])
+        
+      # js) sort on x[2](timestamp)
+      sorted_neighhbors = sorted(neighbors, key=lambda x: x[2])  
       self.node_to_neighbors.append(np.array([x[0] for x in sorted_neighhbors]))
       self.node_to_edge_idxs.append(np.array([x[1] for x in sorted_neighhbors]))
       self.node_to_edge_timestamps.append(np.array([x[2] for x in sorted_neighhbors]))

@@ -36,6 +36,8 @@ def get_data_node_classification(dataset_name, use_validation=False):
 
   random.seed(2020)
 
+    #first 70% train, val 15%, test 15%
+
   train_mask = timestamps <= val_time if use_validation else timestamps <= test_time
   test_mask = timestamps > test_time
   val_mask = np.logical_and(timestamps <= test_time, timestamps > val_time) if use_validation else test_mask

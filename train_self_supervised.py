@@ -142,6 +142,8 @@ new_node_test_data = get_data(DATA,
                               different_new_nodes_between_val_and_test=args.different_new_nodes, randomize_features=args.randomize_features,
                               train_split=TRAIN_SPLIT, fixed_edge_feat=args.fixed_edge_feature)
 
+# js) NBfinder begins here -- find out how neighbor function works
+
 # Initialize training neighbor finder to retrieve temporal graph
 train_ngh_finder = get_neighbor_finder(train_data, args.uniform)
 
