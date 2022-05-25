@@ -237,12 +237,20 @@ for i in range(args.n_runs):
             use_source_embedding_in_message=args.use_source_embedding_in_message,
             dyrep=args.dyrep,
             mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times)
+
+#loss and optim
+
   criterion = torch.nn.BCELoss()
   optimizer = torch.optim.Adam(tgn.parameters(), lr=LEARNING_RATE)
-  tgn = tgn.to(device)
+  
+#cpu    
+  tgn = tgn.to(device) # to cpu
+
 
   if not INFERENCE_ONLY: 
+    # number of user node
     num_instance = len(train_data.sources) # xzl: instances == # of rows in training? 
+    # number of batch for user node
     num_batch = math.ceil(num_instance / BATCH_SIZE)
 
     logger.info('train split: {}'.format(TRAIN_SPLIT))
@@ -256,17 +264,21 @@ for i in range(args.n_runs):
     total_epoch_times = []
     train_losses = []
 
+    #skipped
     early_stopper = EarlyStopMonitor(max_round=args.patience)
+
+    #start Epoch
     for epoch in range(NUM_EPOCH):
       start_epoch = time.time()
       ### Training
 
       # Reinitialize memory of the model at the start of each epoch
     
+        #with node memory -- init to zeros
       if USE_MEMORY:
         tgn.memory.__init_memory__()
 
-      # Train using only training graph
+      # Train using only training graph 
       tgn.set_neighbor_finder(train_ngh_finder)
       m_loss = []
 
@@ -274,6 +286,8 @@ for i in range(args.n_runs):
       
     
       # start training
+    
+    #torch profiler
     
       with profile(
         #activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
@@ -318,10 +332,10 @@ for i in range(args.n_runs):
             
             size = len(sources_batch)
             # xzl: how to ensure these edges are neg?  (sampled sources seem discarded)
-            _, negatives_batch = train_rand_sampler.sample(size)  # js) ?? check
+            _, negatives_batch = train_rand_sampler.sample(size)  # js) how many sample dst nodes
 
             
-            # js) not calc grad?
+            # js) not calc grad and init poslabel and neglabel
             with torch.no_grad():
               pos_label = torch.ones(size, dtype=torch.float, device=device)
               neg_label = torch.zeros(size, dtype=torch.float, device=device)
@@ -329,7 +343,8 @@ for i in range(args.n_runs):
             tgn = tgn.train() # xzl: mark the start of training
             # xzl: @negatives_batch are neg dest. 
             #print("xzl: timestamps for the batch", timestamps_batch)
-
+            
+            #dive in
             pos_prob, neg_prob = tgn.compute_edge_probabilities(sources_batch, destinations_batch, negatives_batch,
                                                                 timestamps_batch, edge_idxs_batch, NUM_NEIGHBORS)
 
