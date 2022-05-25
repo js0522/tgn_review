@@ -256,19 +256,13 @@ for i in range(args.n_runs):
     total_epoch_times = []
     train_losses = []
 
-<<<<<<< HEAD
-    early_stopper = EarlyStopMonitor(max_round=args.patience) ## mark
-=======
     early_stopper = EarlyStopMonitor(max_round=args.patience)
-    
-    # start Epoch
-    
->>>>>>> 99f4a7b466e12f30fd520b0fef3c8a231a611977
     for epoch in range(NUM_EPOCH):
       start_epoch = time.time()
       ### Training
 
       # Reinitialize memory of the model at the start of each epoch
+    
       if USE_MEMORY:
         tgn.memory.__init_memory__()
 
@@ -308,6 +302,11 @@ for i in range(args.n_runs):
             
             #               k     *     200
             # js) get the batches
+            #    start/end index
+            #    source node/ destination node batch
+            #    edge index
+            #    timestamps
+            
             start_idx = batch_idx * BATCH_SIZE
             end_idx = min(num_instance, start_idx + BATCH_SIZE)
             sources_batch, destinations_batch = train_data.sources[start_idx:end_idx], \
