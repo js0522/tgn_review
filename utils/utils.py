@@ -91,9 +91,13 @@ class RandEdgeSampler(object):
 #   @max_node_idx: ignore node with ids higher than this id
 def get_neighbor_finder(data, uniform, max_node_idx=None):
   max_node_idx = max(data.sources.max(), data.destinations.max()) if max_node_idx is None else max_node_idx
-        # js) max id
+    
+    # js) max id
+  
   adj_list = [[] for _ in range(max_node_idx + 1)]
-        # js) create adj_list list
+    
+    # js) create adj_list list for every node
+    
   for source, destination, edge_idx, timestamp in zip(data.sources, data.destinations,
                                                       data.edge_idxs,
                                                       data.timestamps):

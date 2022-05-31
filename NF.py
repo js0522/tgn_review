@@ -136,134 +136,20 @@ logger.addHandler(ch)
 logger.info(args)
 
 ### Extract data for training, validation and testing
-# xzl)@new_node_val/test are nodes never showed up in training.
+
 node_features, edge_features, full_data, train_data, val_data, test_data, new_node_val_data, \
 new_node_test_data = get_data(DATA,
                               different_new_nodes_between_val_and_test=args.different_new_nodes, randomize_features=args.randomize_features,
                               train_split=TRAIN_SPLIT, fixed_edge_feat=args.fixed_edge_feature)
 
-# js) NBfinder begins here 
-# node centric
 
+data=train_data
 # Initialize training neighbor finder to retrieve temporal graph
-train_ngh_finder = get_neighbor_finder(train_data, args.uniform)
 
 # Initialize validation and test neighbor finder to retrieve temporal graph
-full_ngh_finder = get_neighbor_finder(full_data, args.uniform)
 
-# Initialize negative samplers. Set seeds for validation and testing so negatives are the same
-# across different runs
-# NB: in the inductive setting, negatives are sampled only amongst other new nodes
-train_rand_sampler = RandEdgeSampler(train_data.sources, train_data.destinations)
-val_rand_sampler = RandEdgeSampler(full_data.sources, full_data.destinations, seed=0)
-nn_val_rand_sampler = RandEdgeSampler(new_node_val_data.sources, new_node_val_data.destinations,
-                                      seed=1)
-test_rand_sampler = RandEdgeSampler(full_data.sources, full_data.destinations, seed=2)
-nn_test_rand_sampler = RandEdgeSampler(new_node_test_data.sources,
-                                       new_node_test_data.destinations,
-                                       seed=3)
-
-# Set device
-if GPU < 0: # xzl  much faster!! 
-  print("xzl: force using cpu")
-  device_string = 'cpu'  
-  torch.set_num_threads(20)
-  torch.set_num_interop_threads(20)
-else:
-  device_string = 'cuda:{}'.format(GPU) if torch.cuda.is_available() else 'cpu'
-device = torch.device(device_string)
-
-# Compute time statistics   xzl: needed by tgn model --- to normalized time diff for encoding
-mean_time_shift_src, std_time_shift_src, mean_time_shift_dst, std_time_shift_dst = \
-  compute_time_statistics(full_data.sources, full_data.destinations, full_data.timestamps)
-
-for i in range(args.n_runs):
-  results_path = "results/{}_{}.pkl".format(args.prefix, i) if i > 0 else "results/{}.pkl".format(args.prefix)
-  Path("results/").mkdir(parents=True, exist_ok=True)
-
-# Initialize Model
-      # neighbor_finder -- utils/utils/get_neighbor_finder
-          # data -- utils.data_processing import get_data
-          # *another way to represent the graph
-      # node_feature -- pass
-      # edge_feature -- pass
-      # device --skipped
-      # n_layers -- layer
-      # n_heads -- attention layer heads
-      # dropout -- dropout use in regularization method
-      # use_memory --  augument model with node memory
-      # message_dimension -- dimension of message
-      # memory_dimension -- dimension of the memory for each user
-      # memory_update_at_start -- when to update memory
-      # embedding_module_type -- type of embedding modules -- GAT, graph sum, identity, time
-      # message_function -- type of message function -- mlp, identity
-      # aggregator_type -- type of message aggregator
-      # memory_updater_type -- type of memory updater -- gru, rnn
-      # n_neighbors -- number of neighbor to sample
-      # mean_time_shift_src std_time -- 
-      # mean_time_shift_dst std_time
-            # in compute_time_statistics function
-    
-      # use_destination_embedding_in_message
-            # whether use embedding of the destination node
-            
-      # use_source_embedding_in_messgae
-            # whether use embedding fo the source node
-      
-      # dyrep
-            #whether to run the DYREP model
-      
-      # added two
-          # mem_node_prob
-                #how many node have memory
-
-          # use_fixed_times    
-                #???
-            
-  tgn = TGN(neighbor_finder=train_ngh_finder, node_features=node_features,
-            edge_features=edge_features, device=device,
-            n_layers=NUM_LAYER,
-            n_heads=NUM_HEADS, dropout=DROP_OUT, use_memory=USE_MEMORY,
-            message_dimension=MESSAGE_DIM, memory_dimension=MEMORY_DIM,
-            memory_update_at_start=not args.memory_update_at_end,
-            embedding_module_type=args.embedding_module,
-            message_function=args.message_function,
-            aggregator_type=args.aggregator,
-            memory_updater_type=args.memory_updater,
-            n_neighbors=NUM_NEIGHBORS,
-            mean_time_shift_src=mean_time_shift_src, std_time_shift_src=std_time_shift_src,
-            mean_time_shift_dst=mean_time_shift_dst, std_time_shift_dst=std_time_shift_dst,
-            use_destination_embedding_in_message=args.use_destination_embedding_in_message,
-            use_source_embedding_in_message=args.use_source_embedding_in_message,
-            dyrep=args.dyrep,
-            mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times)
-
-#loss and optim
-
-  criterion = torch.nn.BCELoss()
-  optimizer = torch.optim.Adam(tgn.parameters(), lr=LEARNING_RATE)
-  
-#cpu    
-  tgn = tgn.to(device) # to cpu
-
-
-  if not INFERENCE_ONLY: 
-    # number of user node
-    num_instance = len(train_data.sources) # xzl: instances == # of rows in training? 
-    # number of batch for user node
-    num_batch = math.ceil(num_instance / BATCH_SIZE)
-
-    logger.info('train split: {}'.format(TRAIN_SPLIT))
-    logger.info('num of training instances: {}'.format(num_instance))
-    
-    logger.info('num of batches per epoch: {}'.format(num_batch))
-    idx_list = np.arange(num_instance)
-
-    new_nodes_val_aps = []
-    val_aps = []
-    epoch_times = []
-    total_epoch_times = []
-    train_losses = []
-
-    #skipped
-    early_stopper = EarlyStopMonitor(max_round=args.patience)
+#js) each list consist of (node, edge index, timestamp)
+#    train_ngh_finder consist of node_to_nb -- each node to NB
+#                                node_to_edge_idxs -- the edge index of above NB
+#                                node_to_edge_timestamps -- timestamps
+     

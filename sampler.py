@@ -8,25 +8,13 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-# xzl
-from torch.profiler import profile, record_function, ProfilerActivity
-
 from evaluation.evaluation import eval_edge_prediction
 from model.tgn import TGN
 from utils.utils import EarlyStopMonitor, RandEdgeSampler, get_neighbor_finder
 from utils.data_processing import get_data, compute_time_statistics
 
-# xzl
-def trace_handler(p):
-  output = p.key_averages().table(sort_by="self_cpu_time_total", row_limit=10)
-  print(output)
-  p.export_chrome_trace("./traces/trace_" + str(p.step_num) + ".json")    
-
 torch.manual_seed(0)
 np.random.seed(0)
-
-### js) note, default -- int, str, etc.
-            # action -- bool
 
 ### Argument and global variables
 parser = argparse.ArgumentParser('TGN self-supervised training')
@@ -75,17 +63,6 @@ parser.add_argument('--use_source_embedding_in_message', action='store_true',
 parser.add_argument('--dyrep', action='store_true',
                     help='Whether to run the dyrep model')
 
-# xzl 
-parser.add_argument('--inference_only', action='store_true',
-                    help='xzl:do infer only, load a trained model')
-parser.add_argument('--not_load_mem', action='store_true',
-                    help='xzl:when load a trained model, not loading the memory state')
-parser.add_argument('--train_split', type=float, default=0.7, help='train split. validation fixed 0.15. remaining for testing')
-parser.add_argument('--mem_node_prob', type=float, default=1.0, help='%% of nodes that will have memory. default 1.0')
-parser.add_argument('--fixed_edge_feature', action='store_true', default=False,
-                    help="xzl:use fixed edge feature. the feature is the same as the source node's first edge")
-parser.add_argument('--use_fixed_times', action='store_true', default=False,
-                    help="xzl:use fixed timestamps sent to time encodings. the timestamp is cal as the avg of all ts in that batch")
 
 try:
   args = parser.parse_args()
@@ -108,9 +85,6 @@ TIME_DIM = args.time_dim
 USE_MEMORY = args.use_memory
 MESSAGE_DIM = args.message_dim
 MEMORY_DIM = args.memory_dim
-# --- below xzl ---- #
-INFERENCE_ONLY = args.inference_only   
-TRAIN_SPLIT = args.train_split  
 
 Path("./saved_models/").mkdir(parents=True, exist_ok=True)
 Path("./saved_checkpoints/").mkdir(parents=True, exist_ok=True)
@@ -121,8 +95,7 @@ get_checkpoint_path = lambda \
 ### set up logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO) # xzl
+logger.setLevel(logging.DEBUG)
 Path("log/").mkdir(parents=True, exist_ok=True)
 fh = logging.FileHandler('log/{}.log'.format(str(time.time())))
 fh.setLevel(logging.DEBUG)
@@ -136,8 +109,18 @@ logger.addHandler(ch)
 logger.info(args)
 
 ### Extract data for training, validation and testing
-# xzl)@new_node_val/test are nodes never showed up in training.
 node_features, edge_features, full_data, train_data, val_data, test_data, new_node_val_data, \
 new_node_test_data = get_data(DATA,
-                              different_new_nodes_between_val_and_test=args.different_new_nodes, randomize_features=args.randomize_features,
-                              train_split=TRAIN_SPLIT, fixed_edge_feat=args.fixed_edge_feature)
+                              different_new_nodes_between_val_and_test=args.different_new_nodes, randomize_features=args.randomize_features)
+
+# Initialize training neighbor finder to retrieve temporal graph
+train_ngh_finder = get_neighbor_finder(train_data, args.uniform)
+
+# Initialize validation and test neighbor finder to retrieve temporal graph
+full_ngh_finder = get_neighbor_finder(full_data, args.uniform)
+
+# Initialize negative samplers. Set seeds for validation and testing so negatives are the same
+# across different runs
+# NB: in the inductive setting, negatives are sampled only amongst other new nodes
+
+# js) unique source nodes and unique destination nodes
