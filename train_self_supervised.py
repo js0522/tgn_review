@@ -106,8 +106,8 @@ LEARNING_RATE = args.lr
 NODE_DIM = args.node_dim
 TIME_DIM = args.time_dim
 USE_MEMORY = args.use_memory
-MESSAGE_DIM = args.message_dim
-MEMORY_DIM = args.memory_dim
+MESSAGE_DIM = args.message_dim   #100
+MEMORY_DIM = args.memory_dim     #172
 # --- below xzl ---- #
 INFERENCE_ONLY = args.inference_only   
 TRAIN_SPLIT = args.train_split  
@@ -312,8 +312,8 @@ for i in range(args.n_runs):
           # Custom loop to allow to perform backpropagation only every a certain number of batches
           for j in range(args.backprop_every):
             batch_idx = k + j
-            logger.info('k {}'.format(k))
-            logger.info('j {}'.format(j))
+            #logger.info('k {}'.format(k))
+            #logger.info('j {}'.format(j))
             if batch_idx >= num_batch:
               continue
             

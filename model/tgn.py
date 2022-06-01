@@ -35,18 +35,18 @@ class TGN(torch.nn.Module):
     self.node_raw_features = torch.from_numpy(node_features.astype(np.float32)).to(device)
     self.edge_raw_features = torch.from_numpy(edge_features.astype(np.float32)).to(device)
 
-    self.n_node_features = self.node_raw_features.shape[1]
-    self.n_nodes = self.node_raw_features.shape[0]    # xzl) num of nodes
-    self.n_edge_features = self.edge_raw_features.shape[1]  # xzl) edge feat dimension?
-    self.embedding_dimension = self.n_node_features
-    self.n_neighbors = n_neighbors
+    self.n_node_features = self.node_raw_features.shape[1]    #172
+    self.n_nodes = self.node_raw_features.shape[0]    # xzl) num of nodes 9228
+    self.n_edge_features = self.edge_raw_features.shape[1]  # xzl) edge feat dimension? 172
+    self.embedding_dimension = self.n_node_features     #172
+    self.n_neighbors = n_neighbors                      #10 / 10 degree
     self.embedding_module_type = embedding_module_type
     self.use_destination_embedding_in_message = use_destination_embedding_in_message
     self.use_source_embedding_in_message = use_source_embedding_in_message
     self.dyrep = dyrep
 
     self.use_memory = use_memory
-    self.time_encoder = TimeEncode(dimension=self.n_node_features)
+    self.time_encoder = TimeEncode(dimension=self.n_node_features) #dimension = 172
     self.memory = None
     self.mem_node_prob = mem_node_prob
 
@@ -56,53 +56,66 @@ class TGN(torch.nn.Module):
     self.std_time_shift_dst = std_time_shift_dst
 
     if self.use_memory:
-      self.memory_dimension = memory_dimension
+      self.memory_dimension = memory_dimension     #js) 172
       self.memory_update_at_start = memory_update_at_start
       raw_message_dimension = 2 * self.memory_dimension + self.n_edge_features + \
-                              self.time_encoder.dimension
+                              self.time_encoder.dimension  #172*4
       message_dimension = message_dimension if message_function != "identity" else raw_message_dimension
+        #message dimension = 100
       # xzl: whole graph memory, for each node
-      self.memory = Memory(n_nodes=self.n_nodes,
-                           memory_dimension=self.memory_dimension,
-                           input_dimension=message_dimension,
-                           message_dimension=message_dimension,
-                           device=device)
-      self.message_aggregator = get_message_aggregator(aggregator_type=aggregator_type,
-                                                       device=device)
-      self.message_function = get_message_function(module_type=message_function,
-                                                   raw_message_dimension=raw_message_dimension,
-                                                   message_dimension=message_dimension)
+      self.memory = Memory(n_nodes=self.n_nodes,    #9228
+                           memory_dimension=self.memory_dimension,   #172
+                           input_dimension=message_dimension,        #100
+                           message_dimension=message_dimension,      #100
+                           device=device)                            #cpu
+        
+      self.message_aggregator = get_message_aggregator(aggregator_type=aggregator_type, #last
+                                                       device=device)                   #'cpu'
+                                                                                        # LastMessageAggregator
+        
+      self.message_function = get_message_function(module_type=message_function,                   #mlp
+                                                   raw_message_dimension=raw_message_dimension,    #172*4
+                                                   message_dimension=message_dimension)            #100
+                                                                                                   #MLPMessageFunction
+        
       # xzl: GRU/RNN... only has weights, no memory inside
-      self.memory_updater = get_memory_updater(module_type=memory_updater_type,
-                                               memory=self.memory,
-                                               message_dimension=message_dimension,
-                                               memory_dimension=self.memory_dimension,
-                                               device=device)
+      self.memory_updater = get_memory_updater(module_type=memory_updater_type,        #gru
+                                               memory=self.memory,                     #self.memory
+                                               message_dimension=message_dimension,    #100
+                                               memory_dimension=self.memory_dimension, #172
+                                               device=device)                          #'cpu'
+                                                                                       #GRUMemoryUpdater
 
-    self.embedding_module_type = embedding_module_type
+    self.embedding_module_type = embedding_module_type         #graph_attention
 
-    self.embedding_module = get_embedding_module(module_type=embedding_module_type,
-                                                 node_features=self.node_raw_features,
-                                                 edge_features=self.edge_raw_features,
-                                                 memory=self.memory,
-                                                 neighbor_finder=self.neighbor_finder,
-                                                 time_encoder=self.time_encoder,
-                                                 n_layers=self.n_layers,
-                                                 n_node_features=self.n_node_features,
-                                                 n_edge_features=self.n_edge_features,
-                                                 n_time_features=self.n_node_features,
-                                                 embedding_dimension=self.embedding_dimension,
-                                                 device=self.device,
-                                                 n_heads=n_heads, dropout=dropout,
-                                                 use_memory=use_memory,
-                                                 use_fixed_times=use_fixed_times,
-                                                 n_neighbors=self.n_neighbors)
+    
+    self.embedding_module = get_embedding_module(module_type=embedding_module_type, #graph_attention
+                                                 node_features=self.node_raw_features, #172
+                                                 edge_features=self.edge_raw_features, #172
+                                                 memory=self.memory,                   #self.memory
+                                                 neighbor_finder=self.neighbor_finder, 
+                    #train_ngh_finder consist of node_to_nb -- each node to NB
+                                                 #node_to_edge_idxs -- the edge index of above NB                                                                              #node_to_edge_timestamps -- timestamps
+     
+                                                 time_encoder=self.time_encoder,       #timeEncoder
+                                                 n_layers=self.n_layers,               #1 layer default
+                                                 n_node_features=self.n_node_features, #172
+                                                 n_edge_features=self.n_edge_features, #172
+                                                 n_time_features=self.n_node_features, #172
+                                                 embedding_dimension=self.embedding_dimension, #172
+                                                 device=self.device,                   #'cpu'
+                                                 n_heads=n_heads, dropout=dropout,     #2/1
+                                                 use_memory=use_memory,                #true
+                                                 use_fixed_times=use_fixed_times,      #False
+                                                 n_neighbors=self.n_neighbors)         #10
+                                                                                       #GraphAttentionEmbedding
+                                                                                        
 
     # MLP to compute probability on an edge given two node embeddings
     # xzl: decoder, MLP. traineable model.
     self.affinity_score = MergeLayer(self.n_node_features, self.n_node_features,
                                      self.n_node_features,
-                                     1)
+                                     1)          #to 1 dimension
 
   def compute_temporal_embeddings(self, source_nodes, destination_nodes, negative_nodes, edge_times,
                                   edge_idxs, n_neighbors=20):

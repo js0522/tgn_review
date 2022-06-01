@@ -15,7 +15,7 @@ class TimeEncode(torch.nn.Module):
     self.w = torch.nn.Linear(1, dimension)
 
     self.w.weight = torch.nn.Parameter((torch.from_numpy(1 / 10 ** np.linspace(0, 9, dimension)))
-                                       .float().reshape(dimension, -1))
+                                       .float().reshape(dimension, -1))    #0 to 9 with dimension(172) steps, and reshape
     self.w.bias = torch.nn.Parameter(torch.zeros(dimension).float())
 
   def forward(self, t):
