@@ -13,8 +13,10 @@ from torch.profiler import profile, record_function, ProfilerActivity
 
 from evaluation.evaluation import eval_edge_prediction
 from model.tgn import TGN
-from utils.utils import EarlyStopMonitor, RandEdgeSampler, get_neighbor_finder
+from utils.utils import EarlyStopMonitor, RandEdgeSampler, get_neighbor_finder, important_nodes
 from utils.data_processing import get_data, compute_time_statistics
+
+
 
 # xzl
 def trace_handler(p):
@@ -143,7 +145,7 @@ new_node_test_data = get_data(DATA,
                               train_split=TRAIN_SPLIT, fixed_edge_feat=args.fixed_edge_feature)
 
 
-data=train_data
+
 # Initialize training neighbor finder to retrieve temporal graph
 
 # Initialize validation and test neighbor finder to retrieve temporal graph
@@ -152,4 +154,7 @@ data=train_data
 #    train_ngh_finder consist of node_to_nb -- each node to NB
 #                                node_to_edge_idxs -- the edge index of above NB
 #                                node_to_edge_timestamps -- timestamps
-     
+train_ngh_finder = get_neighbor_finder(train_data, args.uniform)
+idx_list = important_nodes(train_data,0.5,0.7)
+
+

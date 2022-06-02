@@ -48,14 +48,14 @@ class LastMessageAggregator(MessageAggregator):
     
     for node_id in unique_node_ids:
         if len(messages[node_id]) > 0:
-            to_update_node_ids.append(node_id)
-            unique_messages.append(messages[node_id][-1][0])
-            unique_timestamps.append(messages[node_id][-1][1])
+            to_update_node_ids.append(node_id)                  #append node id
+            unique_messages.append(messages[node_id][-1][0])    #append message
+            unique_timestamps.append(messages[node_id][-1][1])  #append timestamps
     
-    unique_messages = torch.stack(unique_messages) if len(to_update_node_ids) > 0 else []
-    unique_timestamps = torch.stack(unique_timestamps) if len(to_update_node_ids) > 0 else []
+    unique_messages = torch.stack(unique_messages) if len(to_update_node_ids) > 0 else []           #get list or empty
+    unique_timestamps = torch.stack(unique_timestamps) if len(to_update_node_ids) > 0 else []       #get list or empty
 
-    return to_update_node_ids, unique_messages, unique_timestamps
+    return to_update_node_ids, unique_messages, unique_timestamps          #return list of node to update, with message and timestamp
 
 
 class MeanMessageAggregator(MessageAggregator):

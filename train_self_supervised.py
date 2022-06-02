@@ -13,7 +13,7 @@ from torch.profiler import profile, record_function, ProfilerActivity
 
 from evaluation.evaluation import eval_edge_prediction
 from model.tgn import TGN
-from utils.utils import EarlyStopMonitor, RandEdgeSampler, get_neighbor_finder
+from utils.utils import EarlyStopMonitor, RandEdgeSampler, get_neighbor_finder, important_nodes
 from utils.data_processing import get_data, compute_time_statistics
 
 # xzl
@@ -106,7 +106,6 @@ LEARNING_RATE = args.lr
 NODE_DIM = args.node_dim
 TIME_DIM = args.time_dim
 USE_MEMORY = args.use_memory
-print(USE_MEMORY)
 MESSAGE_DIM = args.message_dim   #100
 MEMORY_DIM = args.memory_dim     #172
 # --- below xzl ---- #
@@ -149,6 +148,9 @@ new_node_test_data = get_data(DATA,
 # Initialize training neighbor finder to retrieve temporal graph
 train_ngh_finder = get_neighbor_finder(train_data, args.uniform)
 
+idx_list=None
+if args.mem_node_prob < 0.9999:
+    idx_list = important_nodes(train_data,args.mem_node_prob,args.train_split )
 # Initialize validation and test neighbor finder to retrieve temporal graph
 full_ngh_finder = get_neighbor_finder(full_data, args.uniform)
 
@@ -239,7 +241,7 @@ for i in range(args.n_runs):
             use_destination_embedding_in_message=args.use_destination_embedding_in_message,
             use_source_embedding_in_message=args.use_source_embedding_in_message,
             dyrep=args.dyrep,
-            mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times)
+            mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times,imp_list=idx_list)
 
 #loss and optim
 

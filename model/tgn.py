@@ -24,7 +24,7 @@ class TGN(torch.nn.Module):
                use_destination_embedding_in_message=False,
                use_source_embedding_in_message=False,
                dyrep=False, 
-               mem_node_prob=1, use_fixed_times=False):
+               mem_node_prob=1, use_fixed_times=False, imp_list=None):
     super(TGN, self).__init__()
 
     self.n_layers = n_layers
@@ -49,7 +49,7 @@ class TGN(torch.nn.Module):
     self.time_encoder = TimeEncode(dimension=self.n_node_features) #dimension = 172
     self.memory = None
     self.mem_node_prob = mem_node_prob
-
+    self.imp_list=imp_list  #js 
     self.mean_time_shift_src = mean_time_shift_src
     self.std_time_shift_src = std_time_shift_src
     self.mean_time_shift_dst = mean_time_shift_dst
@@ -148,8 +148,8 @@ class TGN(torch.nn.Module):
         # xzl: pull msgs of last batch, cal @memory which is used to cal emeddings 
         #       only after embeddings are cal, cal @memory again and persist it
         #     @self.memory.messages is from previous batch        
-        memory, last_update = self.get_updated_memory(list(range(self.n_nodes)),
-                                                      self.memory.messages)
+        memory, last_update = self.get_updated_memory(list(range(self.n_nodes)),    #list of all nodes
+                                                      self.memory.messages)         #the defaultdic for all nodes
       else:
         # xzl: memory already updated at the end of last batch. now just retrieve it
         memory = self.memory.get_memory(list(range(self.n_nodes)))
@@ -161,15 +161,15 @@ class TGN(torch.nn.Module):
       #       only used for TimeEmbedding (Jodie?). not by GraphSum and GAT embeddings, which uses @timestamps
       source_time_diffs = torch.LongTensor(edge_times).to(self.device) - last_update[
         source_nodes].long()
-      source_time_diffs = (source_time_diffs - self.mean_time_shift_src) / self.std_time_shift_src
+      source_time_diffs = (source_time_diffs - self.mean_time_shift_src) / self.std_time_shift_src    # the src (time diff - mean)/std
       destination_time_diffs = torch.LongTensor(edge_times).to(self.device) - last_update[
         destination_nodes].long()
-      destination_time_diffs = (destination_time_diffs - self.mean_time_shift_dst) / self.std_time_shift_dst
+      destination_time_diffs = (destination_time_diffs - self.mean_time_shift_dst) / self.std_time_shift_dst   #the dest (time diff - mean)/std
       negative_time_diffs = torch.LongTensor(edge_times).to(self.device) - last_update[
         negative_nodes].long()
-      negative_time_diffs = (negative_time_diffs - self.mean_time_shift_dst) / self.std_time_shift_dst
+      negative_time_diffs = (negative_time_diffs - self.mean_time_shift_dst) / self.std_time_shift_dst    # the nega (time diff - mean)/std
 
-      time_diffs = torch.cat([source_time_diffs, destination_time_diffs, negative_time_diffs],
+      time_diffs = torch.cat([source_time_diffs, destination_time_diffs, negative_time_diffs],     # cat all 
                              dim=0)
 
     # Compute the embeddings using the embedding module
@@ -263,7 +263,7 @@ class TGN(torch.nn.Module):
     if self.mem_node_prob < 0.9999:
       idx = np.random.choice(np.arange(len(unique_nodes)), 
         int(len(unique_nodes)*self.mem_node_prob), replace=False)
-      sampled_nodes = np.array(unique_nodes)[idx] 
+      sampled_nodes = self.imp_list
       #     using sampled nodes, agg message again 
       unique_nodes, unique_messages, unique_timestamps = \
         self.message_aggregator.aggregate(

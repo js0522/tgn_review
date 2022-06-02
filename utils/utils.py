@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import math
 
 # xzl: a simple MLP: 2 linear layers + activation. as the decoder for link prob prediction
 class MergeLayer(torch.nn.Module):
@@ -108,6 +109,42 @@ def get_neighbor_finder(data, uniform, max_node_idx=None):
 
 # xzl) take @adj_list, sort by timestamp. then given a timestamp (cut time), do a bin 
 # search in the sorted adj list
+
+#js
+def myFunc(e):
+  return len(e)
+
+def important_nodes(data,node_prob=0.5,train_split=0.7):
+    
+  max_source_node_idx= data.sources.max()
+  max_destination_node_idx = data.destinations.max()
+  source_adj_list = [[] for _ in range(max_source_node_idx + 1)]
+  destination_adj_list = [[] for _ in range(max_destination_node_idx + 1)]
+  for source, destination, edge_idx, timestamp in zip(data.sources, data.destinations,
+                                                      data.edge_idxs,
+                                                      data.timestamps):
+    source_adj_list[source].append((source,destination, edge_idx, timestamp))
+    destination_adj_list[destination].append((destination,source, edge_idx, timestamp))
+  source_adj_list.sort(reverse=True, key=myFunc)
+  destination_adj_list.sort(reverse=True, key=myFunc)
+    
+  src_prob_num = math.ceil(max_source_node_idx * node_prob*train_split)
+  dest_prob_num = math.ceil((max_destination_node_idx-max_source_node_idx)*node_prob*train_split*0.6)
+  index_list = []
+
+  for i in range(src_prob_num):
+    #print(source_adj_list[i][0][0])
+    index_list.append(source_adj_list[i][0][0])
+    
+  for i in range(dest_prob_num):
+    #print(destination_adj_list[i][0][0])
+    index_list.append(destination_adj_list[i][0][0])
+
+  index_list.sort()
+
+  return index_list
+
+
 class NeighborFinder:
   def __init__(self, adj_list, uniform=False, seed=None):
     self.node_to_neighbors = []
