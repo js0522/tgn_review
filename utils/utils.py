@@ -128,7 +128,7 @@ def important_nodes(data,node_prob=0.5,train_split=0.7):
   source_adj_list.sort(reverse=True, key=myFunc)
   destination_adj_list.sort(reverse=True, key=myFunc)
     
-  src_prob_num = math.ceil(max_source_node_idx * node_prob*train_split)
+  src_prob_num = math.ceil(max_source_node_idx * node_prob*train_split*1.2)
   dest_prob_num = math.ceil((max_destination_node_idx-max_source_node_idx)*node_prob*train_split*0.6)
   index_list = []
 
