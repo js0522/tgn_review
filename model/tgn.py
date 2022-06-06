@@ -301,7 +301,7 @@ class TGN(torch.nn.Module):
   #       cal updated mem per last batch messages (?). not updating the memory state
   def get_updated_memory(self, nodes, messages):
     # Aggregate messages for the same nodes
-    unique_nodes, unique_messages, unique_timestamps = \
+    unique_nodes, unique_messages, unique_timestamps = \  # all nodes ids, empty, empty
       self.message_aggregator.aggregate(
         nodes,
         messages)
