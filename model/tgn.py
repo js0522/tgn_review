@@ -139,7 +139,9 @@ class TGN(torch.nn.Module):
     nodes = np.concatenate([source_nodes, destination_nodes, negative_nodes]) #xzl: all nodes
     positives = np.concatenate([source_nodes, destination_nodes])
     timestamps = np.concatenate([edge_times, edge_times, edge_times])     # xzl: ts for an edge... for src/dest/neg(dest) ... ?
-
+    import pdb
+    pdb.set_trace()
+    
     memory = None
     time_diffs = None
     if self.use_memory:
@@ -264,6 +266,8 @@ class TGN(torch.nn.Module):
       idx = np.random.choice(np.arange(len(unique_nodes)), 
         int(len(unique_nodes)*self.mem_node_prob), replace=False)
       sampled_nodes = np.array(unique_nodes)[idx] 
+      import pdb
+      pdb.set_trace()
       #     using sampled nodes, agg message again 
       unique_nodes, unique_messages, unique_timestamps = \
         self.message_aggregator.aggregate(

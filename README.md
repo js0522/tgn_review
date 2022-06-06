@@ -86,7 +86,7 @@ python train_self_supervised.py -d reddit --use_memory --prefix tgn-attn-reddit 
 python train_self_supervised.py -d reddit --use_memory --prefix tgn-attn-reddit --n_runs 1
 python3 train_self_supervised.py -d reddit --use_memory --prefix tgn-attn-reddit --n_runs 1 --inference_only
 ```
-
+python3 train_self_supervised.py -d --prefix tgn-attn-wikipedia-train_split_0.5 --n_runs 1 --train_split 0.5 --inference_only --not_load_mem --mem_node_prob 0.4
 # xzl: above are self-supervised. below are supervised. 
 
 Supervised learning on dynamic node classification (this requires a trained model from 
