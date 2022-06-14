@@ -87,6 +87,9 @@ parser.add_argument('--fixed_edge_feature', action='store_true', default=False,
 parser.add_argument('--use_fixed_times', action='store_true', default=False,
                     help="xzl:use fixed timestamps sent to time encodings. the timestamp is cal as the avg of all ts in that batch")
 
+# js)
+parser.add_argument('--core_percent', type=float, default=0.2, help="%% of sample nodes choose to be core")
+
 try:
   args = parser.parse_args()
 except:
@@ -239,7 +242,7 @@ for i in range(args.n_runs):
             use_destination_embedding_in_message=args.use_destination_embedding_in_message,
             use_source_embedding_in_message=args.use_source_embedding_in_message,
             dyrep=args.dyrep,
-            mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times)
+            mem_node_prob=args.mem_node_prob, use_fixed_times=args.use_fixed_times,core_percent=args.core_percent)
 
 #loss and optim
 

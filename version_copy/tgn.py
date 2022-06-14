@@ -24,7 +24,7 @@ class TGN(torch.nn.Module):
                use_destination_embedding_in_message=False,
                use_source_embedding_in_message=False,
                dyrep=False, 
-               mem_node_prob=1, use_fixed_times=False,core_percent=0.9):
+               mem_node_prob=1, use_fixed_times=False):
     super(TGN, self).__init__()
 
     self.n_layers = n_layers
@@ -49,8 +49,7 @@ class TGN(torch.nn.Module):
     self.time_encoder = TimeEncode(dimension=self.n_node_features) #dimension = 172
     self.memory = None
     self.mem_node_prob = mem_node_prob
-    self.core_percent = 0.9
-    
+
     self.mean_time_shift_src = mean_time_shift_src
     self.std_time_shift_src = std_time_shift_src
     self.mean_time_shift_dst = mean_time_shift_dst
@@ -266,18 +265,16 @@ class TGN(torch.nn.Module):
     # print(f"xzl: before sampling. #unique_nodes {len(unique_nodes)}")    
     if self.mem_node_prob < 0.9999:
       num_node = int(len(unique_nodes)*self.mem_node_prob) #number of nodes to sample
-      num_node_core=int(num_node*self.core_percent)
-      num_node_random=int(num_node*(1-self.core_percent))
       for batch_nodes in nodes:
         self.memory_idx[batch_nodes].append(batch_nodes)
       new_idx=self.memory_idx.copy()
       new_idx.sort(reverse=True,key=myFunc)
-      idx = np.random.choice(np.arange(len(unique_nodes)), 
-        num_node_random, replace=False)
-      sampled_nodes = np.array(unique_nodes)[idx] 
-      
-      for i in range(num_node_core):
-        np.insert(sampled_nodes,1,new_idx[i][0])
+      #idx = np.random.choice(np.arange(len(unique_nodes)), 
+      #  num_node, replace=False)
+      #sampled_nodes = np.array(unique_nodes)[idx] 
+      sampled_nodes=[]
+      for i in range(num_node):
+        sampled_nodes.append(new_idx[i][0])
       
       #     using sampled nodes, agg message again 
       unique_nodes, unique_messages, unique_timestamps = \
@@ -365,10 +362,3 @@ class TGN(torch.nn.Module):
   def set_neighbor_finder(self, neighbor_finder):
     self.neighbor_finder = neighbor_finder
     self.embedding_module.neighbor_finder = neighbor_finder
-  
-  def memory_check(self,memory):
-    count=0
-    for i in range(len(memory)):
-      if sum(memory[i]!=0)!=0:
-        count=count + 1
-    return count

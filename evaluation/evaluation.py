@@ -30,7 +30,10 @@ def eval_edge_prediction(model, negative_edge_sampler, data, n_neighbors, batch_
       destinations_batch = data.destinations[s_idx:e_idx]
       timestamps_batch = data.timestamps[s_idx:e_idx]
       edge_idxs_batch = data.edge_idxs[s_idx: e_idx]
-
+      
+      if k%275==0:
+        import pdb
+        pdb.set_trace()
       size = len(sources_batch)
       _, negative_samples = negative_edge_sampler.sample(size)
 
